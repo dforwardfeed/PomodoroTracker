@@ -1,0 +1,94 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 240 10% 6%; /* #0F0F0F */
+  --foreground: 0 0% 98%;
+  --muted: 240 3.7% 15.9%;
+  --muted-foreground: 240 5% 64.9%;
+  --popover: 240 10% 12%; /* #1F1F1F */
+  --popover-foreground: 0 0% 98%;
+  --card: 240 10% 12%; /* #1F1F1F */
+  --card-foreground: 0 0% 98%;
+  --border: 240 3.7% 15.9%;
+  --input: 240 3.7% 15.9%;
+  --primary: 217 91% 60%; /* #3B82F6 */
+  --primary-foreground: 0 0% 98%;
+  --secondary: 240 3.7% 15.9%;
+  --secondary-foreground: 0 0% 98%;
+  --accent: 240 3.7% 15.9%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --ring: 240 4.9% 83.9%;
+  --radius: 0.5rem;
+  --dark-bg: 240 10% 6%; /* #0F0F0F */
+  --dark-card: 240 10% 12%; /* #1F1F1F */
+  --dark-grid: 240 3.7% 15%; /* #262626 */
+}
+
+.dark {
+  --background: 240 10% 6%; /* #0F0F0F */
+  --foreground: 0 0% 98%;
+  --muted: 240 3.7% 15.9%;
+  --muted-foreground: 240 5% 64.9%;
+  --popover: 240 10% 12%; /* #1F1F1F */
+  --popover-foreground: 0 0% 98%;
+  --card: 240 10% 12%; /* #1F1F1F */
+  --card-foreground: 0 0% 98%;
+  --border: 240 3.7% 15.9%;
+  --input: 240 3.7% 15.9%;
+  --primary: 217 91% 60%; /* #3B82F6 */
+  --primary-foreground: 0 0% 98%;
+  --secondary: 240 3.7% 15.9%;
+  --secondary-foreground: 0 0% 98%;
+  --accent: 240 3.7% 15.9%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --ring: 240 4.9% 83.9%;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased text-foreground;
+    background-color: hsl(var(--dark-bg));
+  }
+}
+
+@layer components {
+  .grid-pattern {
+    background-image: 
+      linear-gradient(rgba(38, 38, 38, 0.5) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(38, 38, 38, 0.5) 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+  
+  .glassmorphic {
+    background: rgba(31, 31, 31, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .timer-circle {
+    transform: rotate(-90deg);
+  }
+  
+  .progress-ring {
+    transition: stroke-dashoffset 0.3s ease;
+  }
+  
+  .draggable-handle {
+    cursor: grab;
+    transform-origin: center;
+  }
+  
+  .draggable-handle:active {
+    cursor: grabbing;
+  }
+}
