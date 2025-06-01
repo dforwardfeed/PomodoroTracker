@@ -78,8 +78,18 @@ export function serveStatic(app: Express) {
 
   app.use(express.static(distPath));
 
-  // fall through to index.html if the file doesn't exist
-  app.use("*", (_req, res) => {
+  // Only serve index.html for actual page routes, not for static assets
+  app.use("*", (req, res, next) => {
+    // Don't serve index.html for static assets or API routes
+    if (req.originalUrl.startsWith('/api') || 
+        req.originalUrl.startsWith('/audio') ||
+        req.originalUrl.startsWith('/assets') ||
+        req.originalUrl.includes('.')) {
+      // Let it 404 naturally for missing static files
+      return res.status(404).send('Not Found');
+    }
+
+    // Serve index.html for actual page routes
     res.sendFile(path.resolve(distPath, "index.html"));
   });
 }
