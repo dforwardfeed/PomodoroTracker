@@ -1,0 +1,69 @@
+Project Overview
+Create a full-stack web application with a Pomodoro/Focus Timer that includes background music during focus sessions. The app should work perfectly in both development and production environments.
+Technical Stack
+
+Frontend: React with TypeScript, Vite as build tool
+Styling: Tailwind CSS with shadcn/ui components
+Backend: Express.js with TypeScript
+Audio: Background focus music that plays during timer sessions
+
+Core Features Required
+1. Timer Functionality
+
+Circular visual timer display showing progress
+Adjustable session length (1-60 minutes)
+Start/Pause/Reset controls
+Visual feedback showing remaining time (MM:SS format)
+Status text showing current state ("Ready to focus", "Stay focused!", "Paused")
+Notification when timer completes
+
+2. Timer Controls
+
+Increase/decrease session length buttons (only when timer is not active)
+Large start/pause button with appropriate icons
+Reset button to stop and reset timer
+Draggable handle on circular timer to adjust minutes (when not active)
+
+3. Audio Integration (CRITICAL for production)
+
+Background music that plays during active focus sessions
+Music should loop continuously during session
+Music pauses when timer is paused
+Music stops when timer is reset or completes
+
+4. UI/UX Requirements
+
+Clean, modern interface using cards
+Smooth animations for timer progress
+Responsive design that works on mobile and desktop
+Dark mode support
+Proper hover states and visual feedback
+
+CRITICAL Implementation Details for Audio to Work in Production
+Audio File Handling
+The audio MUST be implemented using one of these approaches:
+Option 1 (Recommended): Import as ES Module
+typescript// In your timer component
+import focusMusic from '@/assets/focus-music.mp3';
+
+// Then use it like this
+const audio = new Audio(focusMusic);
+Option 2: Public Directory Approach
+- Place audio file in: client/public/audio/focus-music.mp3
+- Reference it as: new Audio('/audio/focus-music.mp3')
+Build Configuration
+Ensure these configurations are correct:
+vite.config.ts:
+
+Proper alias setup for @ imports
+Correct build output directory
+Asset handling configured
+
+package.json scripts:
+json{
+  "scripts": {
+    "dev": "NODE_ENV=development tsx server/index.ts",
+    "build": "vite build",
+    "start": "NODE_ENV=production node dist/index.js"
+  }
+}
