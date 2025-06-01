@@ -4,80 +4,118 @@ export const useAudio = () => {
   const [isEnabled, setIsEnabled] = useState(true);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const gainNodeRef = useRef<GainNode | null>(null);
+  const oscillatorsRef = useRef<OscillatorNode[]>([]);
 
   useEffect(() => {
-    // Initialize audio
+    // Initialize Web Audio API for generated ambient sound
     try {
-      const audio = new Audio('/audio/focus-music.mp3');
-      audio.loop = true;
-      audio.volume = 0.3;
-      audio.preload = 'auto';
+      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+      const audioContext = new AudioContext();
+      const gainNode = audioContext.createGain();
+      gainNode.gain.value = 0.08; // Low volume
+      gainNode.connect(audioContext.destination);
       
-      audio.addEventListener('canplaythrough', () => {
-        setIsLoaded(true);
-      });
-      
-      audio.addEventListener('error', (e) => {
-        console.warn('Audio file not found - music functionality disabled');
-        setIsLoaded(false);
-      });
-
-      audio.addEventListener('play', () => setIsPlaying(true));
-      audio.addEventListener('pause', () => setIsPlaying(false));
-      audio.addEventListener('ended', () => setIsPlaying(false));
-      
-      audioRef.current = audio;
+      audioContextRef.current = audioContext;
+      gainNodeRef.current = gainNode;
+      setIsLoaded(true);
     } catch (error) {
-      console.warn('Audio initialization failed:', error);
+      console.warn('Web Audio API not supported');
       setIsLoaded(false);
     }
 
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.src = '';
-        audioRef.current = null;
+      if (audioContextRef.current) {
+        stopOscillators();
+        audioContextRef.current.close();
       }
     };
   }, []);
 
+  const stopOscillators = useCallback(() => {
+    oscillatorsRef.current.forEach(osc => {
+      try {
+        osc.stop();
+        osc.disconnect();
+      } catch (e) {
+        // Oscillator might already be stopped
+      }
+    });
+    oscillatorsRef.current = [];
+  }, []);
+
+  const createAmbientSound = useCallback(() => {
+    if (!audioContextRef.current || !gainNodeRef.current) return;
+
+    // Create multiple oscillators for ambient sound
+    const frequencies = [55, 73, 110, 147]; // Low frequencies for calming ambient effect
+    const oscillators: OscillatorNode[] = [];
+
+    frequencies.forEach((freq, index) => {
+      const oscillator = audioContextRef.current!.createOscillator();
+      const oscGain = audioContextRef.current!.createGain();
+      
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(freq, audioContextRef.current!.currentTime);
+      
+      // Vary the volume for each oscillator to create a rich ambient sound
+      oscGain.gain.value = 0.12 - (index * 0.02);
+      
+      oscillator.connect(oscGain);
+      oscGain.connect(gainNodeRef.current!);
+      
+      oscillator.start();
+      oscillators.push(oscillator);
+    });
+
+    oscillatorsRef.current = oscillators;
+  }, []);
+
   const play = useCallback(async () => {
-    if (!audioRef.current || !isEnabled || !isLoaded) return;
+    if (!isEnabled || !isLoaded || !audioContextRef.current) return;
     
     try {
-      await audioRef.current.play();
+      // Resume audio context if suspended
+      if (audioContextRef.current.state === 'suspended') {
+        await audioContextRef.current.resume();
+      }
+      
+      // Stop any existing oscillators and create new ones
+      stopOscillators();
+      createAmbientSound();
+      setIsPlaying(true);
     } catch (error) {
       console.warn('Audio play failed:', error);
     }
-  }, [isEnabled, isLoaded]);
+  }, [isEnabled, isLoaded, stopOscillators, createAmbientSound]);
 
   const pause = useCallback(() => {
-    if (!audioRef.current) return;
-    audioRef.current.pause();
-  }, []);
+    stopOscillators();
+    setIsPlaying(false);
+  }, [stopOscillators]);
 
   const stop = useCallback(() => {
-    if (!audioRef.current) return;
-    audioRef.current.pause();
-    audioRef.current.currentTime = 0;
-  }, []);
+    stopOscillators();
+    setIsPlaying(false);
+  }, [stopOscillators]);
 
   const toggleEnabled = useCallback(() => {
     setIsEnabled(prev => {
       const newEnabled = !prev;
-      if (!newEnabled && audioRef.current) {
-        audioRef.current.pause();
+      if (!newEnabled) {
+        stopOscillators();
+        setIsPlaying(false);
       }
       return newEnabled;
     });
-  }, []);
+  }, [stopOscillators]);
 
   const getStatus = useCallback(() => {
     if (!isLoaded) return 'Audio unavailable';
     if (!isEnabled) return 'Audio disabled';
-    if (isPlaying) return 'Playing focus music';
-    return 'Background music ready';
+    if (isPlaying) return 'Playing ambient focus sound';
+    return 'Ambient sound ready';
   }, [isLoaded, isEnabled, isPlaying]);
 
   return {
